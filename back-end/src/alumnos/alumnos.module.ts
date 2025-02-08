@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AlumnosService } from './alumnos.service';
 import { AlumnosController } from './alumnos.controller';
-import { Alumno, AlumnoSchema } from './entities/alumno.entity';
+import { AlumnosService } from './alumnos.service';
+import { Alumno, AlumnoSchema } from './schemas/alumno.schema';
 
 @Module({
   imports: [

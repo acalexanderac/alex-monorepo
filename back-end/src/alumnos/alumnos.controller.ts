@@ -4,7 +4,7 @@ import { CreateAlumnoDto } from './dto/create-alumno.dto';
 import { UpdateAlumnoDto } from './dto/update-alumno.dto';
 import { ApiKey } from '../auth/api-key.guard';
 
-@Controller()
+@Controller('alumnos')
 @UseGuards(ApiKey)
 export class AlumnosController {
   constructor(private readonly alumnosService: AlumnosService) {}
@@ -14,8 +14,8 @@ export class AlumnosController {
     return this.alumnosService.create(createAlumnoDto);
   }
 
-  @Get('consultar-alumno/:idGrado')
-  findByGrado(@Param('idGrado') grado: number) {
+  @Get('consultar-por-grado/:grado')
+  findByGrado(@Param('grado') grado: number) {
     return this.alumnosService.findByGrado(+grado);
   }
 
@@ -27,5 +27,15 @@ export class AlumnosController {
   @Delete('eliminar-alumno/:id')
   remove(@Param('id') id: string) {
     return this.alumnosService.remove(id);
+  }
+
+  @Get()
+  findAll() {
+    return this.alumnosService.findAll();
+  }
+
+  @Get('consultar-por-id/:id')
+  findOne(@Param('id') id: string) {
+    return this.alumnosService.findOne(id);
   }
 }

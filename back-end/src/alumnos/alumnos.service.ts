@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Alumno } from './schemas/alumno.schema';
 import { CreateAlumnoDto } from './dto/create-alumno.dto';
 import { UpdateAlumnoDto } from './dto/update-alumno.dto';
-import { Alumno } from './entities/alumno.entity';
 
 @Injectable()
 export class AlumnosService {
@@ -12,12 +12,12 @@ export class AlumnosService {
   ) {}
 
   async create(createAlumnoDto: CreateAlumnoDto): Promise<Alumno> {
-    const alumno = new this.alumnoModel(createAlumnoDto);
-    return await alumno.save();
+    const createdAlumno = new this.alumnoModel(createAlumnoDto);
+    return createdAlumno.save();
   }
 
   async findAll(): Promise<Alumno[]> {
-    return await this.alumnoModel.find().exec();
+    return this.alumnoModel.find().exec();
   }
 
   async findByGrado(grado: number): Promise<Alumno[]> {
