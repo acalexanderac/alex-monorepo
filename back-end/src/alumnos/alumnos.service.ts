@@ -8,6 +8,11 @@ import { CreateAlumnoDto } from './dto/create-alumno.dto';
 import { UpdateAlumnoDto } from './dto/update-alumno.dto';
 import { FindAlumnosDto } from './dto/find-alumnos.dto';
 
+interface PaginationOptions {
+  page: number;
+  limit: number;
+}
+
 @Injectable()
 export class AlumnosService {
   constructor(
@@ -20,42 +25,20 @@ export class AlumnosService {
     return createdAlumno.save();
   }
 
-  async findAll(findAlumnosDto: FindAlumnosDto) {
-    const cacheKey = `alumnos_${JSON.stringify(findAlumnosDto)}`;
-    const cachedData = await this.cacheManager.get(cacheKey);
-    
-    if (cachedData) {
-      return cachedData;
-    }
-
-    const { page = 1, limit = 10, search, grado, seccion } = findAlumnosDto;
+  async findAll(options: PaginationOptions) {
+    const { page, limit } = options;
     const skip = (page - 1) * limit;
 
-    const query = this.alumnoModel.find();
-
-    if (search) {
-      query.or([
-        { nombreAlumno: { $regex: search, $options: 'i' } },
-        { nombrePadre: { $regex: search, $options: 'i' } },
-        { nombreMadre: { $regex: search, $options: 'i' } },
-      ]);
-    }
-
-    if (grado) {
-      query.where('grado').equals(grado);
-    }
-
-    if (seccion) {
-      query.where('seccion').equals(seccion);
-    }
-
-    const [alumnos, total] = await Promise.all([
-      query.skip(skip).limit(limit).exec(),
-      this.alumnoModel.countDocuments(query.getFilter()),
+    const [data, total] = await Promise.all([
+      this.alumnoModel.find()
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.alumnoModel.countDocuments(),
     ]);
 
-    const result = {
-      data: alumnos,
+    return {
+      data,
       meta: {
         total,
         page,
@@ -63,9 +46,6 @@ export class AlumnosService {
         totalPages: Math.ceil(total / limit),
       },
     };
-
-    await this.cacheManager.set(cacheKey, result);
-    return result;
   }
 
   async findByGrado(grado: number): Promise<Alumno[]> {

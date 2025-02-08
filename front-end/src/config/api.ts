@@ -1,2 +1,2 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-export const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'tu_api_key_secreta'; 
+export const API_URL = 'http://localhost:4000';
+export const API_KEY = 'escuela123';

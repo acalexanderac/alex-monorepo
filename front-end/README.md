@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Gestión Escolar - Frontend
 
-## Getting Started
+Sistema web para la gestión de alumnos de una escuela, desarrollado con Next.js 14 y TypeScript.
 
-First, run the development server:
+## Características
 
+- ✨ Listado de alumnos con paginación
+- ✅ Crear nuevos alumnos
+- 📝 Editar información de alumnos
+- 🗑️ Eliminar alumnos
+- 🎨 Interfaz moderna y responsive
+- 🔍 Validación de formularios
+
+## Tecnologías
+
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- React Hook Form
+- React Icons
+
+## Requisitos Previos
+
+- Node.js 18 o superior
+- npm o yarn
+- API Backend ejecutándose en puerto 4000
+
+## Instalación
+
+1. Clonar el repositorio:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <url-del-repositorio>
+cd front-end
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instalar dependencias:
+```bash
+npm install
+# o
+yarn install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configurar variables de entorno:
+```bash
+cp .env.example .env.local
+```
+Editar `.env.local` con las variables necesarias:
+```
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_KEY=tu-api-key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Desarrollo
 
-## Learn More
+Iniciar el servidor de desarrollo:
+```bash
+npm run dev
+# o
+yarn dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estructura del Proyecto
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+front-end/
+├── src/
+│   ├── app/                 # Páginas y rutas
+│   ├── components/          # Componentes reutilizables
+│   ├── services/           # Servicios y llamadas a la API
+│   ├── config/             # Configuraciones
+│   └── types/              # Tipos de TypeScript
+├── public/                 # Archivos estáticos
+└── ...
+```
 
-## Deploy on Vercel
+## Scripts Disponibles
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev`: Inicia el servidor de desarrollo
+- `npm run build`: Construye la aplicación para producción
+- `npm run start`: Inicia la aplicación en modo producción
+- `npm run lint`: Ejecuta el linter
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Despliegue
+
+La aplicación está lista para ser desplegada en Vercel:
+
+```bash
+npm run build
+npm run start
+```
+
+## Contribuir
+
+1. Fork el proyecto
+2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir un Pull Request
+
+## Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.

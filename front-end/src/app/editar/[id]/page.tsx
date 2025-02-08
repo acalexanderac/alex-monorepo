@@ -1,82 +1,86 @@
 'use client'
 
-import AlumnoForm from '@/components/AlumnoForm';
-import Layout from '@/components/Layout';
-import { useRouter, useParams } from 'next/navigation';
-import { alumnosService } from '@/services/alumnosService';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
-interface Alumno {
-  _id?: string;
-  nombreAlumno: string;
-  fechaNacimiento: string;
-  nombrePadre: string;
-  nombreMadre: string;
-  grado: number;
-  seccion: string;
-}
+import { useRouter, useParams } from 'next/navigation';
+import { alumnosService, type Alumno, type AlumnoBase } from '@/services/alumnosService';
+import AlumnoForm from '@/components/AlumnoForm';
+import Loading from '@/components/Loading';
+import { FiEdit2 } from 'react-icons/fi';
 
 export default function EditarAlumno() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
   const [alumno, setAlumno] = useState<Alumno | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const cargarAlumno = async () => {
       try {
-        const alumnoData = await alumnosService.consultarPorId(id);
-        if (alumnoData) {
-          setAlumno(alumnoData);
-        } else {
-          alert('No se encontró el alumno');
-          router.push('/');
-        }
-      } catch (error) {
-        console.error('Error al cargar alumno:', error);
-        alert('Error al cargar los datos del alumno');
+        const response = await alumnosService.consultarPorId(params.id as string);
+        setAlumno(response.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al cargar alumno');
       } finally {
         setLoading(false);
       }
     };
 
-    cargarAlumno();
-  }, [id, router]);
+    if (params.id) {
+      cargarAlumno();
+    }
+  }, [params.id]);
 
-  const handleSubmit = async (data: Alumno) => {
+  const handleSubmit = async (data: AlumnoBase) => {
     try {
-      await alumnosService.actualizar(id, data);
+      await alumnosService.actualizar(params.id as string, data);
       router.push('/');
-    } catch (error) {
-      console.error('Error al actualizar alumno:', error);
-      alert('Error al actualizar alumno');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al actualizar alumno');
     }
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-screen">
-          <div className="text-xl">Cargando...</div>
-        </div>
-      </Layout>
-    );
-  }
+  if (loading) return <Loading />;
+  if (error) return <div className="text-red-600">Error: {error}</div>;
+  if (!alumno) return <div>No se encontró el alumno</div>;
+
+  const alumnoBase: AlumnoBase = {
+    nombreAlumno: alumno.nombreAlumno,
+    fechaNacimiento: alumno.fechaNacimiento,
+    nombrePadre: alumno.nombrePadre,
+    nombreMadre: alumno.nombreMadre,
+    grado: alumno.grado,
+    seccion: alumno.seccion
+  };
 
   return (
-    <Layout>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Editar Alumno</h1>
-        <Link 
-          href="/"
-          className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-        >
-          Volver
-        </Link>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-black mb-2 flex items-center">
+          <FiEdit2 className="mr-3" size={24} />
+          Editar Alumno
+        </h1>
+        <p className="text-black">
+          Actualiza la información del estudiante
+        </p>
       </div>
-      {alumno && <AlumnoForm onSubmit={handleSubmit} initialData={alumno} />}
-    </Layout>
+
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>
+      ) : !alumno ? (
+        <div className="bg-yellow-50 text-yellow-600 p-4 rounded-lg">
+          No se encontró el alumno
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <AlumnoForm 
+            initialData={alumnoBase}
+            onSubmit={handleSubmit}
+          />
+        </div>
+      )}
+    </div>
   );
 } 

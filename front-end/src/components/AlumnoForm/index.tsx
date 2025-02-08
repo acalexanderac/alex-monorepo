@@ -1,162 +1,172 @@
 'use client'
 
-import { FormEvent, useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { AlumnoBase } from '@/services/alumnosService';
+import { useState, useEffect } from 'react';
 
 interface AlumnoFormProps {
-  onSubmit: (data: AlumnoFormData) => void;
-  initialData?: AlumnoFormData;
+  initialData?: AlumnoBase;
+  onSubmit: (data: AlumnoBase) => Promise<void>;
 }
 
-interface AlumnoFormData {
-  nombreAlumno: string;
-  fechaNacimiento: string;
-  nombrePadre: string;
-  nombreMadre: string;
-  grado: number;
-  seccion: string;
-}
-
-export default function AlumnoForm({ onSubmit, initialData }: AlumnoFormProps) {
-  const [formData, setFormData] = useState<AlumnoFormData>({
-    nombreAlumno: '',
-    fechaNacimiento: '',
-    nombrePadre: '',
-    nombreMadre: '',
-    grado: 1,
-    seccion: ''
+export default function AlumnoForm({ initialData, onSubmit }: AlumnoFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<AlumnoBase>({
+    defaultValues: {
+      nombreAlumno: '',
+      fechaNacimiento: '',
+      nombrePadre: '',
+      nombreMadre: '',
+      grado: 1,
+      seccion: 'A',
+      ...initialData
+    }
   });
 
   useEffect(() => {
     if (initialData) {
-      // Formatear la fecha para el input date
-      const fechaFormateada = initialData.fechaNacimiento.split('T')[0];
-      setFormData({
-        ...initialData,
-        fechaNacimiento: fechaFormateada
-      });
+      reset(initialData);
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const handleFormSubmit = async (data: AlumnoBase) => {
+    try {
+      setIsSubmitting(true);
+      const formData = {
+        ...data,
+        grado: Number(data.grado)
+      };
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
-      <div>
-        <label htmlFor="nombreAlumno" className="block text-base font-semibold text-slate-900 mb-2">
-          Nombre del Alumno
-        </label>
-        <input
-          type="text"
-          id="nombreAlumno"
-          value={formData.nombreAlumno}
-          onChange={(e) => setFormData({ ...formData, nombreAlumno: e.target.value })}
-          className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
-          placeholder="Ingrese el nombre completo"
-          required
-        />
-      </div>
-
-      <div>
-        <label htmlFor="fechaNacimiento" className="block text-base font-semibold text-slate-900 mb-2">
-          Fecha de Nacimiento
-        </label>
-        <input
-          type="date"
-          id="fechaNacimiento"
-          value={formData.fechaNacimiento}
-          onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
-          className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <div>
-          <label htmlFor="nombrePadre" className="block text-base font-semibold text-slate-900 mb-2">
-            Nombre del Padre
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="max-w-2xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">
+            Nombre del Alumno *
           </label>
           <input
             type="text"
-            id="nombrePadre"
-            value={formData.nombrePadre}
-            onChange={(e) => setFormData({ ...formData, nombrePadre: e.target.value })}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
-            placeholder="Ingrese el nombre del padre"
-            required
+            {...register('nombreAlumno', { 
+              required: 'El nombre es requerido',
+              minLength: { value: 3, message: 'El nombre debe tener al menos 3 caracteres' }
+            })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            disabled={isSubmitting}
           />
+          {errors.nombreAlumno && (
+            <p className="text-sm text-red-600">{errors.nombreAlumno.message}</p>
+          )}
         </div>
 
-        <div>
-          <label htmlFor="nombreMadre" className="block text-base font-semibold text-slate-900 mb-2">
-            Nombre de la Madre
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">
+            Fecha de Nacimiento *
+          </label>
+          <input
+            type="date"
+            {...register('fechaNacimiento', { required: 'La fecha es requerida' })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            disabled={isSubmitting}
+          />
+          {errors.fechaNacimiento && (
+            <p className="text-sm text-red-600">{errors.fechaNacimiento.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">
+            Nombre del Padre *
           </label>
           <input
             type="text"
-            id="nombreMadre"
-            value={formData.nombreMadre}
-            onChange={(e) => setFormData({ ...formData, nombreMadre: e.target.value })}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
-            placeholder="Ingrese el nombre de la madre"
-            required
+            {...register('nombrePadre', { required: 'El nombre del padre es requerido' })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            disabled={isSubmitting}
           />
+          {errors.nombrePadre && (
+            <p className="text-sm text-red-600">{errors.nombrePadre.message}</p>
+          )}
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <div>
-          <label htmlFor="grado" className="block text-base font-semibold text-slate-900 mb-2">
-            Grado
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">
+            Nombre de la Madre *
+          </label>
+          <input
+            type="text"
+            {...register('nombreMadre', { required: 'El nombre de la madre es requerido' })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            disabled={isSubmitting}
+          />
+          {errors.nombreMadre && (
+            <p className="text-sm text-red-600">{errors.nombreMadre.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">
+            Grado *
           </label>
           <select
-            id="grado"
-            value={formData.grado}
-            onChange={(e) => setFormData({ ...formData, grado: Number(e.target.value) })}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
-            required
+            {...register('grado', { 
+              required: 'El grado es requerido',
+              min: { value: 1, message: 'El grado debe ser entre 1 y 6' },
+              max: { value: 6, message: 'El grado debe ser entre 1 y 6' },
+              valueAsNumber: true
+            })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            disabled={isSubmitting}
           >
-            {[1, 2, 3, 4, 5, 6].map((grado) => (
-              <option key={grado} value={grado}>
-                {grado}º Grado
-              </option>
+            {[1, 2, 3, 4, 5, 6].map(num => (
+              <option key={num} value={num}>{num}º Grado</option>
             ))}
           </select>
+          {errors.grado && (
+            <p className="text-sm text-red-600">{errors.grado.message}</p>
+          )}
         </div>
 
-        <div>
-          <label htmlFor="seccion" className="block text-base font-semibold text-slate-900 mb-2">
-            Sección
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">
+            Sección *
           </label>
-          <input
-            type="text"
-            id="seccion"
-            value={formData.seccion}
-            onChange={(e) => setFormData({ ...formData, seccion: e.target.value })}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
-            placeholder="Ejemplo: A"
-            required
-          />
+          <select
+            {...register('seccion', { required: 'La sección es requerida' })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            disabled={isSubmitting}
+          >
+            {['A', 'B', 'C'].map(sec => (
+              <option key={sec} value={sec}>Sección {sec}</option>
+            ))}
+          </select>
+          {errors.seccion && (
+            <p className="text-sm text-red-600">{errors.seccion.message}</p>
+          )}
         </div>
       </div>
 
-      <div className="pt-6">
-        <div className="flex justify-end gap-4">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="px-6 py-3 rounded-lg text-slate-900 bg-slate-100 hover:bg-slate-200 transition-all font-semibold"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-200"
-          >
-            Guardar Cambios
-          </button>
-        </div>
+      <div className="mt-8 flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
+        </button>
       </div>
     </form>
   );

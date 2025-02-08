@@ -4,7 +4,7 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'http://localhost:3000',
   headers: {
-    'x-api-key': process.env.NEXT_PUBLIC_API_KEY || 'tu_api_key_secreta'
+    'x-api-key': process.env.NEXT_PUBLIC_API_KEY || 'escuela123'
   }
 });
 

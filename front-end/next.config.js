@@ -8,6 +8,6 @@ const nextConfig = {
 module.exports = {
   ...nextConfig,
   serverOptions: {
-    port: 4000
+    port: 3000
   }
 } 

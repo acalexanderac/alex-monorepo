@@ -1,5 +1,5 @@
-import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AlumnosService } from './alumnos.service';
 import { CreateAlumnoDto } from './dto/create-alumno.dto';
 import { UpdateAlumnoDto } from './dto/update-alumno.dto';
@@ -49,10 +49,20 @@ export class AlumnosController {
   }
 
   @Get()
+  @ApiQuery({ name: 'page', type: Number, required: false, description: 'Número de página' })
+  @ApiQuery({ name: 'limit', type: Number, required: false, description: 'Límite de resultados por página' })
   @ApiOperation({ summary: 'Obtener lista de alumnos' })
   @ApiResponse({ status: 200, description: 'Lista de alumnos obtenida exitosamente' })
-  findAll(@Query() findAlumnosDto: FindAlumnosDto) {
-    return this.alumnosService.findAll(findAlumnosDto);
+  async findAll(
+    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('limit', ParseIntPipe) limit: number = 10,
+  ) {
+    const options = {
+      page: Math.max(1, page),
+      limit: Math.max(1, limit)
+    };
+
+    return this.alumnosService.findAll(options);
   }
 
   @Get('consultar-por-id/:id')

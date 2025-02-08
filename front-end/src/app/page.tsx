@@ -1,74 +1,87 @@
 'use client'
 
+import { useState, useEffect } from 'react';
 import AlumnoList from '@/components/AlumnoList';
-import Layout from '@/components/Layout';
+import Loading from '@/components/Loading';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { alumnosService, type Alumno } from '@/services/alumnosService';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { alumnosService, Alumno } from '@/services/alumnosService';
+import { FiPlus, FiUsers } from 'react-icons/fi';
 
 export default function Home() {
   const [alumnos, setAlumnos] = useState<Alumno[]>([]);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const cargarAlumnos = async () => {
+  const fetchAlumnos = async (page = 1) => {
     try {
-      const data = await alumnosService.obtenerTodos();
-      setAlumnos(data);
-    } catch (err) {
-      setError('Error al cargar los alumnos');
-      console.error(err);
+      setLoading(true);
+      const response = await alumnosService.obtenerTodos(Number(page), 10);
+      setAlumnos(response.data.data);
+      setMeta(response.data.meta);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    cargarAlumnos();
+    fetchAlumnos();
   }, []);
+
+  const handlePageChange = (newPage: number) => {
+    fetchAlumnos(newPage);
+  };
 
   const handleDelete = async (id: string) => {
     try {
       await alumnosService.eliminar(id);
-      setAlumnos(alumnos.filter(alumno => alumno._id !== id));
+      fetchAlumnos(meta.page);
     } catch (err) {
-      setError('Error al eliminar el alumno');
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'Error al eliminar el alumno');
     }
   };
 
   return (
-    <Layout>
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Sistema de Gestión Escolar
-          </h1>
-          <p className="mt-2 text-slate-600">
-            Administra la información de tus estudiantes de manera eficiente
-          </p>
+    <ErrorBoundary>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                <FiUsers className="mr-3" size={24} />
+                Lista de Alumnos
+              </h1>
+              <p className="text-gray-600">
+                Sistema de Gestión Escolar - Administra la información de tus estudiantes
+              </p>
+            </div>
+            <Link
+              href="/crear-alumno"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+            >
+              <FiPlus className="mr-2" />
+              Nuevo Estudiante
+            </Link>
+          </div>
         </div>
-        <Link 
-          href="/crear" 
-          className="inline-flex items-center px-6 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-200"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          Nuevo Estudiante
-        </Link>
+
+        {loading ? (
+          <Loading />
+        ) : error ? (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>
+        ) : (
+          <AlumnoList
+            alumnos={alumnos}
+            meta={meta}
+            onPageChange={handlePageChange}
+            onDelete={handleDelete}
+          />
+        )}
       </div>
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-xl text-slate-600">Cargando estudiantes...</div>
-        </div>
-      ) : error ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-xl text-red-600">{error}</div>
-        </div>
-      ) : (
-        <AlumnoList alumnos={alumnos} onDelete={handleDelete} />
-      )}
-    </Layout>
+    </ErrorBoundary>
   );
 } 
