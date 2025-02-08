@@ -1,0 +1,17 @@
+{
+  "name": "alumnos-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "front-end",
+    "back-end"
+  ],
+  "scripts": {
+    "dev:frontend": "cd front-end && npm run dev",
+    "dev:backend": "cd back-end && npm run start:dev",
+    "build:frontend": "cd front-end && npm run build",
+    "build:backend": "cd back-end && npm run build",
+    "start:frontend": "cd front-end && npm run start",
+    "start:backend": "cd back-end && npm run start"
+  }
+} 
